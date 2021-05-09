@@ -5,7 +5,11 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
+import org.threeten.bp.DateTimeUtils.toLocalDateTime
 import kotlin.time.ExperimentalTime
 
 // set GOOGLE_APPLICATION_CREDENTIALS=path/to/firestoreCredetialFile.json
@@ -25,36 +29,27 @@ data class Counter(val count: Int, val start: Long, val end: Long)
 
 @ExperimentalTime
 suspend fun main(args: Array<String>): Unit = runBlocking {
-    val (width, limit) = args.map { it.toInt() }
+    val (devNum, limit) = args.map { it.toInt() }
 
-    // Counter Monitor起動
-    //runCounterMonitor(width)
-
-    repeat(100) { devId ->
+    repeat(devNum) { devId ->
         launch {
-            runClient(devId, width, limit / 5)
+            runClient(devId, limit )
         }
     }
 }
 
-suspend fun runClient(devId: Int, width: Int, limit: Int) {
+fun now() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+
+suspend fun runClient(devId: Int, loop: Int) = runCatching {
+    println("start: ${now()} $devId")
     var total = 0
-    while (total < limit) {
-        val res = httpClient.get<Counter>("$url?width=$width")
+//    while (total < limit) {
+    repeat(loop) {
+        val res = httpClient.get<Counter>("$url?width=1")
         total += res.count
 
         val wps = res.count * 1000.0 / (res.end - res.start)
         println("$devId, $total,${res.count},${res.end - res.start},$wps")
     }
-}
+}.onFailure { it.printStackTrace() }.getOrThrow()
 
-fun runCounterMonitor(width: Int) {
-    @Serializable
-    data class Counter(val count: Int)
-
-    firestore.collection("counter").limit(width).addSnapshotListener { v, e ->
-        v?.documents?.sumBy { it?.data!!["count"] as Int? ?: 0 }?.let {
-            print("C: $it \r")
-        }
-    }
-}
