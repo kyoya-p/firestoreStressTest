@@ -1,4 +1,4 @@
-package httpClient
+package common
 
 import com.google.cloud.firestore.FirestoreOptions
 import io.ktor.client.*
@@ -27,7 +27,7 @@ val firestore = FirestoreOptions.getDefaultInstance().service!!
 val httpClient = HttpClient(CIO) {
     install(JsonFeature) { serializer = KotlinxSerializer() }
     install(HttpTimeout) {
-        requestTimeoutMillis = 60 * 1000
-        connectTimeoutMillis = 60 * 1000
+        requestTimeoutMillis = 120 * 1000
+        connectTimeoutMillis = 120 * 1000
     }
 }

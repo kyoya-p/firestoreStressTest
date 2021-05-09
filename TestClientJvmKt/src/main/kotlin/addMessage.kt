@@ -1,4 +1,7 @@
+package addMessage
+
 import com.google.cloud.firestore.FirestoreOptions
+import common.httpClient
 import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
@@ -11,14 +14,6 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import org.threeten.bp.DateTimeUtils.toLocalDateTime
 import kotlin.time.ExperimentalTime
-
-// set GOOGLE_APPLICATION_CREDENTIALS=path/to/firestoreCredetialFile.json
-val firestore = FirestoreOptions.getDefaultInstance().service!!
-val httpClient = HttpClient {
-    install(JsonFeature) {
-        serializer = KotlinxSerializer() // https://jp.ktor.work/clients/http-client/quick-start/requests.html
-    } // https://jp.ktor.work/clients/http-client/features/json-feature.html
-}
 
 val url = "http://localhost:5001/stress1/us-central1/addMessage" // Local Emu.
 //val url = "https://us-central1-stress1.cloudfunctions.net/addMessage" // Cloud
