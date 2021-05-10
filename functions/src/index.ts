@@ -16,7 +16,7 @@ export const addMessage = functions.https.onRequest(async (req, res) => {
     var result = await report(`${i}`)
     if (result != null) count++;
   }
-  res.json({ "count": `${count}`, "start": start, "end": end });
+  res.json({ "count": `${count}`, "start": start, "end": end, "svrtime": firebase.firestore.FieldValue.serverTimestamp() });
 });
 
 function report(id: String) {
@@ -69,7 +69,11 @@ export const runAgent = functions.https.onRequest(async (req, res) => {
 
   var c = 0;
   for (var i = 0; i < num; ++i) {
-    const r = await firestore.collection('messages').add({ "id": devId, "count": i, "now": Date(), "time": Date.now(), })
+    const log = {
+      "id": devId, "count": i, "now": Date(), "time": Date.now(),
+      "svrtime": firebase.firestore.FieldValue.serverTimestamp()
+    }
+    const r = await firestore.collection('messages').add(log)
     if (r != null) ++c
   }
 
@@ -82,7 +86,11 @@ export const runAgent = functions.https.onRequest(async (req, res) => {
 export const startAt = functions.https.onRequest(async (req, res) => {
   const sleep = (msec: number) => new Promise(resolve => setTimeout(resolve, msec));
   async function addRecord(id: string) {
-    await firestore.collection('messages').add({ "id": id, "now": Date(), "time": Date.now(), })
+    const log = {
+      "id": id, "now": Date(), "time": Date.now(),
+      "svrtime": firebase.firestore.FieldValue.serverTimestamp()
+    }
+    await firestore.collection('messages').add(log)
     return `${id}, ${Date.now()}`
   }
   const devId = req.query.id as string
