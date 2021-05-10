@@ -11,29 +11,25 @@ val url = "http://localhost:5001/stress1/us-central1/startAt" // Local Emu.
 //val url = "https://us-central1-stress1.cloudfunctions.net/startAt" // Cloud★★★
 
 @Serializable
-data class Request(val devId: String, val n: Int, val et: Long, val st: Long) {
-    fun url() = "$url?id=$devId&n=$n&et=$et&st=$st"
+data class Request(val devid: String, val n: Int, val et: Long, val ts: Long) {
+    fun url() = "$url?id=$devid&n=$n&et=$et&ts=$ts"
 }
 
 @Serializable
-data class Result(val devId: String, val et: Long, val ct: Long, val st: Long, val end: Long, val res: List<String>)
+data class Result(val devid: String, val ts: Long, val end: String, val res: List<String>)
 
 @ExperimentalTime
 suspend fun main(args: Array<String>): Unit = runBlocking {
     val (nDev, nMsg) = args.map { it.toInt() }
 
     val org = now()
-    val st = org + 30 * 1000
+    val st = org + 5 * 1000
     (0 until nDev).map { id ->
-        delay(10)
         val req = Request("$id", nMsg, now(), st)
         println("$id ${now() - org} ${req.url()}")
-        async {
-            httpClient.get<Result>(req.url())
-        }
+        async { httpClient.get<Result>(req.url()) }
     }.awaitAll().forEach { res ->
-        //println("${it.devId}, ${it.et}, ${it.ct}, ${it.st}, ${it.end}, ${it.end - it.st}, $it")
-        res.res.forEach { println(it) }
+        res.res.forEach { e -> println(e) }
     }
 }
 
