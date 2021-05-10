@@ -51,7 +51,7 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
   var proms = Array<Promise<string>>()
 
   for (var i = 0; i < nr; ++i) {
-    const r = getAsync(`${req.originalUrl}/startAt/?id=${devId},${i}&n=${nm}&ts=${ts}`)
+    const r = getAsync(`http://localhost:5001/stress1/us-central1/startAt/?id=${devId},${i}&n=${nm}&ts=${ts}`)
     proms.push(r)
   }
   var rs = (await Promise.all(proms))
