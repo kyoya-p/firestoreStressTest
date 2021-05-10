@@ -55,7 +55,7 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
     proms.push(r)
   }
   var rs = (await Promise.all(proms))
-  res.json({ "res": `${rs}` })
+  res.json({ "res": rs })
 })
 
 // 指定時刻tまで待ち同時にn回Write
