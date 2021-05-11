@@ -7,7 +7,7 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 
-val url = "http://localhost:5001/stress1/us-central1/startAt" // Local Emu.
+val url = "http://localhost:5001/stress1/us-central1/startAt" // Local Emulator
 //val url = "https://us-central1-stress1.cloudfunctions.net/startAt" // Cloud★★★
 
 @Serializable
