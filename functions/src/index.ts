@@ -29,16 +29,34 @@ function report(id: String) {
   );
 }
 
-async function getAsync(url: string): Promise<string> {
+function getAsync(url: string): Promise<string> {
   http.get(url, (r: any) => {
     r.on('data', (d: any) => {
       return d
     });
   }).on('error', (e: any) => {
     return `${e}`
-  });
-  return "no"
+  })
 }
+
+function div(num1: number, num2: number,
+  callback: (err: any, value: number | null) => void) {
+  if (num2 == 0) {
+    callback('ERROR: Zero division', null)
+  } else {
+    callback(null, num1 / num2)
+  }
+}
+
+import * as util from 'util'
+const divPromise = util.promisify(div)
+
+divPromise(5, 2).then(value => {
+  console.log(`Result: ${value}`)
+}).catch(err => {
+  console.error(err)
+});
+
 
 // startAtをnr回起動
 // .../startAtLauncher/?id=<dev_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>

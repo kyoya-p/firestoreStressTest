@@ -18,7 +18,7 @@ data class Request(val id: String, val nr: Int, val nm: Int, val ts: Long) {
 }
 
 @Serializable
-data class Result(val devid: String, val ts: Long, val end: String, val res: List<String>)
+data class Result(val res: List<String>)
 
 @ExperimentalTime
 suspend fun main(args: Array<String>): Unit = runBlocking {
@@ -30,9 +30,8 @@ suspend fun main(args: Array<String>): Unit = runBlocking {
         val req = Request("$id", nReq, nMsg, tStart)
         println("$id ${now() - tOrg} ${req.url()}")
         async { httpClient.get<Result>(req.url()) }
-    }.awaitAll().forEach { res ->
-        res.res.forEach { e -> println(e) }
-    }
+    }.awaitAll().forEach {  println(it) }
+
 }
 
 fun now() = Clock.System.now().toEpochMilliseconds()
