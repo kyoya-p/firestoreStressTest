@@ -29,7 +29,7 @@ function report(id: String) {
   );
 }
 
-function getAsync(url: string): Promise<string> {
+async function getAsync(url: string): Promise<string> {
   http.get(url, (r: any) => {
     r.on('data', (d: any) => {
       return d
@@ -37,8 +37,10 @@ function getAsync(url: string): Promise<string> {
   }).on('error', (e: any) => {
     return `${e}`
   })
+  return "no"
 }
 
+/*
 function div(num1: number, num2: number,
   callback: (err: any, value: number | null) => void) {
   if (num2 == 0) {
@@ -57,11 +59,12 @@ divPromise(5, 2).then(value => {
   console.error(err)
 });
 
+*/
 
 // startAtをnr回起動
-// .../startAtLauncher/?id=<dev_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
+// .../startAtLauncher/?id=<launch_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
 export const startAtLauncher = functions.https.onRequest(async (req, res) => {
-  const devId = req.query.id as string
+  const launchId = req.query.id as string
   const nr = parseInt(req.query.nr as string)
   const nm = parseInt(req.query.nm as string)
   const ts = parseInt(req.query.ts as string)
@@ -69,7 +72,7 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
   var proms = Array<Promise<string>>()
 
   for (var i = 0; i < nr; ++i) {
-    const r = getAsync(`http://localhost:5001/stress1/us-central1/startAt/?id=${devId},${i}&n=${nm}&ts=${ts}`)
+    const r = getAsync(`http://localhost:5001/stress1/us-central1/startAt/?id=${launchId},${i}&n=${nm}&ts=${ts}`)
     proms.push(r)
   }
   var rs = (await Promise.all(proms))
@@ -79,6 +82,9 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
 // 指定時刻tまで待ち同時にn回Write
 // .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>
 export const startAt = functions.https.onRequest(async (req, res) => {
+  const devId = req.query.id as string
+  const startTime = parseInt(req.query.ts as string)
+  const nMsg = parseInt(req.query.n as string)
   const sleep = (msec: number) => new Promise(resolve => setTimeout(resolve, msec))
   async function addRecord(id: string) {
     const log = {
@@ -90,10 +96,6 @@ export const startAt = functions.https.onRequest(async (req, res) => {
     firestore.collection('messages').add(log)
     return `${id}, ${Date.now()}`
   }
-  const devId = req.query.id as string
-  const startTime = parseInt(req.query.ts as string)
-  const nMsg = parseInt(req.query.n as string)
-
   await sleep(startTime - Date.now())
   var proms = Array<Promise<string>>()
   for (var i = 0; i < nMsg; ++i) {
