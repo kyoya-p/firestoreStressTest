@@ -93,7 +93,7 @@ export const startAt = functions.https.onRequest(async (req, res) => {
       "time": Date.now(),
       "svrtime": firebase.firestore.FieldValue.serverTimestamp()
     }
-    firestore.collection('messages').add(log)
+    await firestore.collection('messages').add(log)
     return `${id}, ${Date.now()}`
   }
   await sleep(startTime - Date.now())
