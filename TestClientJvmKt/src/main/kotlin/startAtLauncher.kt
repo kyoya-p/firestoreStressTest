@@ -13,8 +13,8 @@ val url = "https://us-central1-stress1.cloudfunctions.net/startAtLauncher" // Cl
 // .../startAtLauncher/?id=<dev_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
 
 @Serializable
-data class Request(val id: String, val nr: Int, val nm: Int, val ts: Long) {
-    fun url() = "$url?id=$id&nr=$nr&nm=$nm&ts=$ts"
+data class Request(val id: String, val nReq: Int, val nMsg: Int, val timeKeepUntil: Long) {
+    fun url() = "$url?id=$id&nr=$nReq&nm=$nMsg&ts=$timeKeepUntil"
 }
 
 @Serializable
