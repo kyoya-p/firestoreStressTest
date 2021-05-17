@@ -33,7 +33,6 @@ fun main(args: Array<String>): Unit = runBlocking {
         println("$id ${now() - tOrg} ${req.url()}")
         async { httpClient.get<Result>(req.url()) }
     }.awaitAll().forEach { println(it) }
-
 }
 
 fun now() = Clock.System.now().toEpochMilliseconds()
