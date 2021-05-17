@@ -1,5 +1,8 @@
 package startAtLauncher
 
+import com.google.api.client.json.Json
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import common.httpClient
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
@@ -18,19 +21,18 @@ data class Request(val id: String, val nReq: Int, val nMsg: Int, val timeKeepUnt
 }
 
 @Serializable
-data class Result(val res: List<String>)
+data class Result(val res: String)
 
 @ExperimentalTime
-suspend fun main(args: Array<String>): Unit = runBlocking {
+fun main(args: Array<String>): Unit = runBlocking {
     val (nLaunchReq, nLaunch, nMsg) = args.map { it.toInt() }
     val tOrg = now()
     val tStart = tOrg + 30 * 1000
     (0 until nLaunchReq).map { id ->
-        fun now() = Clock.System.now().toEpochMilliseconds()
         val req = Request("$id", nLaunch, nMsg, tStart)
         println("$id ${now() - tOrg} ${req.url()}")
         async { httpClient.get<Result>(req.url()) }
-    }.awaitAll().forEach {  println(it) }
+    }.awaitAll().forEach { println(it) }
 
 }
 

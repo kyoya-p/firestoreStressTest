@@ -11,21 +11,21 @@ import kotlin.time.ExperimentalTime
 val url = "https://us-central1-stress1.cloudfunctions.net/startAt" // Cloud★★★
 
 @Serializable
-data class Request(val devid: String, val n: Int, val et: Long, val ts: Long) {
-    fun url() = "$url?id=$devid&n=$n&et=$et&ts=$ts"
+data class Request(val id: String, val nMsg: Int, val timeToStart: Long) {
+    fun url() = "$url?id=$id&n=$nMsg&ts=$timeToStart"
 }
 
 @Serializable
 data class Result(val devid: String, val ts: Long, val end: String, val res: List<String>)
 
 @ExperimentalTime
-suspend fun main(args: Array<String>): Unit = runBlocking {
+ fun main(args: Array<String>): Unit = runBlocking {
     val (nDev, nMsg) = args.map { it.toInt() }
 
     val org = now()
     val tStart = org + 30 * 1000
     (0 until nDev).map { id ->
-        val req = Request("$id", nMsg, now(), tStart)
+        val req = Request("$id", nMsg,  tStart)
         println("$id ${now() - org} ${req.url()}")
         async { httpClient.get<Result>(req.url()) }
     }.awaitAll().forEach { res ->
