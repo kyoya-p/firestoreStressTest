@@ -6,6 +6,9 @@ const http = require('https');
 firebase.initializeApp();
 const firestore = firebase.firestore();
 
+const sleep = (msec: number) => new Promise(resolve => setTimeout(resolve, msec))
+
+
 export const addMessage = functions.https.onRequest(async (req, res) => {
   //const width: number = parseInt(req.query.width as string);
   var count = 0;
@@ -28,7 +31,7 @@ function report(id: String) {
     }
   );
 }
-
+/*
 async function getAsync(url: string): Promise<string> {
   http.get(url, (r: any) => {
     r.on('data', (d: any) => {
@@ -39,6 +42,22 @@ async function getAsync(url: string): Promise<string> {
   })
   return "no"
 }
+*/
+
+async function httpGetCB(url: string, callback: (err: any, res: any) => void) {
+  http.get(url, (r: any) => {
+    r.on('data', (d: any) => {
+      callback(null, d)
+    });
+  }).on('error', (e: any) => {
+    callback(e, null)
+  })
+  await sleep(50 * 1000)
+  callback("Timeout", null)
+}
+
+import * as util from 'util'
+const httpGet = util.promisify(httpGetCB)
 
 /*
 function div(num1: number, num2: number,
@@ -73,18 +92,18 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
     var proms = Array<Promise<string>>()
 
     for (var i = 0; i < nr; ++i) {
-      //    const r = getAsync(`http://localhost:5001/stress1/us-central1/startAt/?id=${launchId},${i}&n=${nm}&ts=${ts}`)
-      const r = getAsync(`https://us-central1-stress1.cloudfunctions.net/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
-
+      const reqUrl = `https://us-central1-stress1.cloudfunctions.net/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`
+      //const reqUrl = `http://localhost:5001/stress1/us-central1/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`
+      // const r = getAsync(reqUrl)
+      const r = httpGet(reqUrl)
       proms.push(r)
     }
     var rs = (await Promise.all(proms))
-    //res.json({ "res": `${launchId},${nr},${nm},${timeToStart} ,${rs}` })
-    res.json({ "res": `${rs}` })
+    res.json({ "res": `${launchId},${nr},${nm},${timeToStart} ,${rs.length}` })
+    //res.json({ "res": `${rs}` })
   } catch (e) {
     res.json({ "res": `${e}` })
   }
-
 })
 
 // 指定時刻tまで待ち同時にn回Write
@@ -94,7 +113,6 @@ export const startAt = functions.https.onRequest(async (req, res) => {
     const devId = req.query.id as string
     const startTime = parseInt(req.query.ts as string)
     const nMsg = parseInt(req.query.n as string)
-    const sleep = (msec: number) => new Promise(resolve => setTimeout(resolve, msec))
     async function addRecord(id: string) {
       const log = {
         "id": id,
@@ -112,7 +130,7 @@ export const startAt = functions.https.onRequest(async (req, res) => {
       proms.push(r)
     }
     var rs = (await Promise.all(proms))
-    res.json({ "devid": `${devId}`, "ts": startTime, "end": `${Date.now()}`, "res": rs })
+    res.json({ "devid": `${devId}`, "ts": startTime, "end": `${Date.now()}`, "res": rs.length })
   } catch (e) {
     res.json({ "res": `${e}` })
   }

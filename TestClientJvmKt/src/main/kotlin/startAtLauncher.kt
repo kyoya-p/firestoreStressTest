@@ -27,7 +27,7 @@ data class Result(val res: String)
 fun main(args: Array<String>): Unit = runBlocking {
     val (nLaunchReq, nLaunch, nMsg) = args.map { it.toInt() }
     val tOrg = now()
-    val tStart = tOrg + 30 * 1000
+    val tStart = tOrg + 10 * 1000
     (0 until nLaunchReq).map { id ->
         val req = Request("$id", nLaunch, nMsg, tStart)
         println("$id ${now() - tOrg} ${req.url()}")
