@@ -1,4 +1,4 @@
-package startAtLauncher
+package startAtLauncher1
 
 import com.google.api.client.json.Json
 import com.google.gson.JsonElement
@@ -10,8 +10,8 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 
-//val url = "http://localhost:5001/stress1/us-central1/startAtLauncher" // Local Emu.
-val url = "https://us-central1-stress1.cloudfunctions.net/startAtLauncher" // Cloud★★★
+//val url = "http://localhost:5001/stress1/us-central1/startAtLauncher1" // Local Emu.
+val url = "https://us-central1-stress1.cloudfunctions.net/startAtLauncher1" // Cloud★★★
 
 // .../startAtLauncher/?id=<dev_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
 

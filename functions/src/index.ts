@@ -27,22 +27,12 @@ function report(id: String) {
     {
       "count": id,
       "now": `${Date()}`,
-      "time": `${Date.now()}`,
+      "time": Date.now(),
+      "svrTime": firebase.firestore.FieldValue.serverTimestamp(),
     }
   );
 }
-/*
-async function getAsync(url: string): Promise<string> {
-  http.get(url, (r: any) => {
-    r.on('data', (d: any) => {
-      return d
-    });
-  }).on('error', (e: any) => {
-    return `${e}`
-  })
-  return "no"
-}
-*/
+
 
 async function httpGetCB(url: string, callback: (err: any, res: any) => void) {
   http.get(url, (r: any) => {
@@ -59,38 +49,38 @@ async function httpGetCB(url: string, callback: (err: any, res: any) => void) {
 import * as util from 'util'
 const httpGet = util.promisify(httpGetCB)
 
-/*
-function div(num1: number, num2: number,
-  callback: (err: any, value: number | null) => void) {
-  if (num2 == 0) {
-    callback('ERROR: Zero division', null)
-  } else {
-    callback(null, num1 / num2)
-  }
-}
-
-import * as util from 'util'
-const divPromise = util.promisify(div)
-
-divPromise(5, 2).then(value => {
-  console.log(`Result: ${value}`)
-}).catch(err => {
-  console.error(err)
-});
-
-*/
-
-// startAtをnr回起動
+// startAtLauncherをnr回起動
 // .../startAtLauncher/?id=<launch_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
-export const startAtLauncher = functions.https.onRequest(async (req, res) => {
+export const startAtLauncher1 = functions.https.onRequest(async (req, res) => {
   try {
-
     const launchId = req.query.id as string
     const nr = parseInt(req.query.nr as string)
     const nm = parseInt(req.query.nm as string)
     const timeToStart = parseInt(req.query.ts as string)
     var proms = Array<Promise<string>>()
+    for (var i = 0; i < nr; ++i) {
+      const reqUrl = `https://us-central1-stress1.cloudfunctions.net/startAtLauncher/?id=${launchId},${i}&nr=${nr}&nm=${nm}&ts=${timeToStart}`
+      //const reqUrl = `http://localhost:5001/stress1/us-central1/startAtLauncher/?id=${launchId},${i}&nr=${nr}&nm=${nm}&ts=${timeToStart}`
+      // const r = getAsync(reqUrl)
+      const r = httpGet(reqUrl)
+      proms.push(r)
+    }
+    var rs = (await Promise.all(proms))
+    res.json({ "id": launchId, "nr": nr, "nm": nm, "ts": timeToStart, "te": Date.now(), "res": rs.length })
+  } catch (e) {
+    res.json({ "res": `${e}` })
+  }
+})
 
+// startAtをnr回起動
+// .../startAtLauncher/?id=<launch_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
+export const startAtLauncher = functions.https.onRequest(async (req, res) => {
+  try {
+    const launchId = req.query.id as string
+    const nr = parseInt(req.query.nr as string)
+    const nm = parseInt(req.query.nm as string)
+    const timeToStart = parseInt(req.query.ts as string)
+    var proms = Array<Promise<string>>()
     for (var i = 0; i < nr; ++i) {
       const reqUrl = `https://us-central1-stress1.cloudfunctions.net/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`
       //const reqUrl = `http://localhost:5001/stress1/us-central1/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`
@@ -99,7 +89,7 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
       proms.push(r)
     }
     var rs = (await Promise.all(proms))
-    res.json({ "res": `${launchId},${nr},${nm},${timeToStart} ,${rs.length}` })
+    res.json({ "id": launchId, "nr": nr, "nm": nm, "ts": timeToStart, "te": Date.now(), "res": rs.length })
     //res.json({ "res": `${rs}` })
   } catch (e) {
     res.json({ "res": `${e}` })
@@ -130,7 +120,7 @@ export const startAt = functions.https.onRequest(async (req, res) => {
       proms.push(r)
     }
     var rs = (await Promise.all(proms))
-    res.json({ "devid": `${devId}`, "ts": startTime, "end": `${Date.now()}`, "res": rs.length })
+    res.json({ "id": `${devId}`, "ts": startTime, "te": Date.now(), "res": rs.length })
   } catch (e) {
     res.json({ "res": `${e}` })
   }
