@@ -1,8 +1,5 @@
 package startAtLauncher1
 
-import com.google.api.client.json.Json
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import common.httpClient
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
@@ -16,20 +13,29 @@ val url = "https://us-central1-stress1.cloudfunctions.net/startAtLauncher1" // C
 // .../startAtLauncher/?id=<dev_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
 
 @Serializable
-data class Request(val id: String, val nReq: Int, val nMsg: Int, val timeKeepUntil: Long) {
-    fun url() = "$url?id=$id&nr=$nReq&nm=$nMsg&ts=$timeKeepUntil"
+data class Request(val id: String, val nReq1: Int, val nReq: Int, val nMsg: Int, val timeToStart: Long) {
+    fun url() = "$url?id=$id&nr1=$nReq1&nr=$nReq&nm=$nMsg&ts=$timeToStart"
 }
+
+@Serializable
+data class Result(
+    val id: String,
+    val nr1: Int, val nr: Int, val nm: Int, val ts: Long, val te: Long,
+    val cr: Int, val res: Long
+)
+
 
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
-    val (nLaunchReq, nLaunch, nMsg) = args.map { it.toInt() }
+    val (nLaunchReq, nLaunch, nReq, nMsg) = args.map { it.toInt() }
     val tOrg = now()
     val tStart = tOrg + 10 * 1000
-    (0 until nLaunchReq).map { id ->
-        val req = Request("$id", nLaunch, nMsg, tStart)
+    val rs: Long = (0 until nLaunchReq).map { id ->
+        val req = Request(id = "$id", nReq1 = nLaunch, nReq = nReq, nMsg = nMsg, timeToStart = tStart)
         println("$id ${now() - tOrg} ${req.url()}")
-        async { httpClient.get<String>(req.url()) }
-    }.awaitAll().map { it.replace(Regex("\\{:,}"), " ") }.forEach { println(it) }
+        async { httpClient.get<Result>(req.url()) }
+    }.awaitAll().map { it.also { println(it) } }.sumOf { it.res }
+    println("total num of results: $rs")
 }
 
 fun now() = Clock.System.now().toEpochMilliseconds()

@@ -20,6 +20,10 @@ data class Request(val id: String, val nReq: Int, val nMsg: Int, val timeKeepUnt
     fun url() = "$url?id=$id&nr=$nReq&nm=$nMsg&ts=$timeKeepUntil"
 }
 
+@Serializable
+data class Result(val id: String, val nr: Int, val nm: Int, val ts: Long, val te: Long, val res: Long)
+
+
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
     val (nLaunchReq, nLaunch, nMsg) = args.map { it.toInt() }

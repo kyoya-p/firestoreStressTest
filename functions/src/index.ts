@@ -54,21 +54,22 @@ const httpGet = util.promisify(httpGetCB)
 export const startAtLauncher1 = functions.https.onRequest(async (req, res) => {
   try {
     const launchId = req.query.id as string
+    const nr1 = parseInt(req.query.nr1 as string)
     const nr = parseInt(req.query.nr as string)
     const nm = parseInt(req.query.nm as string)
     const timeToStart = parseInt(req.query.ts as string)
-    var proms = Array<Promise<string>>()
-    for (var i = 0; i < nr; ++i) {
+    var proms = Array<Promise<any>>()
+    for (var i = 0; i < nr1; ++i) {
       const reqUrl = `https://us-central1-stress1.cloudfunctions.net/startAtLauncher/?id=${launchId},${i}&nr=${nr}&nm=${nm}&ts=${timeToStart}`
-      //const reqUrl = `http://localhost:5001/stress1/us-central1/startAtLauncher/?id=${launchId},${i}&nr=${nr}&nm=${nm}&ts=${timeToStart}`
-      // const r = getAsync(reqUrl)
       const r = httpGet(reqUrl)
       proms.push(r)
     }
-    var rs = (await Promise.all(proms))
-    res.json({ "id": launchId, "nr": nr, "nm": nm, "ts": timeToStart, "te": Date.now(), "res": rs.length })
-  } catch (e) {
-    res.json({ "res": `${e}` })
+    var rs = await Promise.all(proms)
+    var s = 0
+    rs.reduce((e) => { s += parseInt(e["res"] as string) })
+    res.json({ "id": launchId, "nr1": nr1, "nr": nr, "nm": nm, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "res": s })
+  } catch (ex) {
+    res.json({ "res": `${ex}` })
   }
 })
 
@@ -80,19 +81,19 @@ export const startAtLauncher = functions.https.onRequest(async (req, res) => {
     const nr = parseInt(req.query.nr as string)
     const nm = parseInt(req.query.nm as string)
     const timeToStart = parseInt(req.query.ts as string)
-    var proms = Array<Promise<string>>()
+    var proms = Array<Promise<any>>()
     for (var i = 0; i < nr; ++i) {
       const reqUrl = `https://us-central1-stress1.cloudfunctions.net/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`
-      //const reqUrl = `http://localhost:5001/stress1/us-central1/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`
-      // const r = getAsync(reqUrl)
       const r = httpGet(reqUrl)
       proms.push(r)
     }
-    var rs = (await Promise.all(proms))
-    res.json({ "id": launchId, "nr": nr, "nm": nm, "ts": timeToStart, "te": Date.now(), "res": rs.length })
+    var rs = await Promise.all(proms)
+    var s = 0
+    rs.reduce((e) => { s += parseInt(e["res"] as string) })
+    res.json({ "id": launchId, "nr": nr, "nm": nm, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "res": s })
     //res.json({ "res": `${rs}` })
-  } catch (e) {
-    res.json({ "res": `${e}` })
+  } catch (ex) {
+    res.json({ "res": `${ex}` })
   }
 })
 
@@ -120,7 +121,7 @@ export const startAt = functions.https.onRequest(async (req, res) => {
       proms.push(r)
     }
     var rs = (await Promise.all(proms))
-    res.json({ "id": `${devId}`, "ts": startTime, "te": Date.now(), "res": rs.length })
+    res.json({ "id": `${devId}`, "ts": startTime, "te": Date.now(), "cs": rs.length, "res": nMsg })
   } catch (e) {
     res.json({ "res": `${e}` })
   }
