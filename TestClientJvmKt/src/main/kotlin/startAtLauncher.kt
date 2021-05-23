@@ -21,19 +21,20 @@ data class Request(val id: String, val nReq: Int, val nMsg: Int, val timeKeepUnt
 }
 
 @Serializable
-data class Result(val id: String, val nr: Int, val nm: Int, val ts: Long, val te: Long, val res: Long)
+data class Result(val id: String, val tc: Long, val ts: Long, val te: Long, val cr: Long, val cs: Long)
 
 
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
     val (nLaunchReq, nLaunch, nMsg) = args.map { it.toInt() }
     val tOrg = now()
-    val tStart = tOrg + 10 * 1000
-    (0 until nLaunchReq).map { id ->
+    val tStart = tOrg + 45 * 1000
+    val rs = (0 until nLaunchReq).map { id ->
         val req = Request("$id", nLaunch, nMsg, tStart)
         println("$id ${now() - tOrg} ${req.url()}")
-        async { httpClient.get<String>(req.url()) }
-    }.awaitAll().map { it.replace(Regex("\\{:,}"), " ") }.forEach { println(it) }
+        async { httpClient.get<Result>(req.url()) }
+    }.awaitAll().map { it.also { println(it) } }.sumOf { it.cs }
+    println("total num of results: $rs")
 }
 
 fun now() = Clock.System.now().toEpochMilliseconds()
