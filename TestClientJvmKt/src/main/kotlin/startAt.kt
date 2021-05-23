@@ -1,6 +1,7 @@
 package startAt
 
 import common.httpClient
+import common.urlBase
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
@@ -8,7 +9,7 @@ import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 
 //val url = "http://localhost:5001/stress1/us-central1/startAt" // Local Emulator
-val url = "https://us-central1-stress1.cloudfunctions.net/startAt" // Cloud★★★
+val url = "$urlBase/startAt" // Cloud★★★
 
 @Serializable
 data class Request(val id: String, val nMsg: Int, val timeToStart: Long) {
@@ -22,8 +23,9 @@ data class Result(val id: String, val tc: Long, val ts: Long, val te: Long, val 
 fun main(args: Array<String>): Unit = runBlocking {
     val (nDev, nMsg) = args.map { it.toInt() }
 
+
     val org = now()
-    val tStart = org + 45 * 1000
+    val tStart = org + 15 * 1000
     val rs = (0 until nDev).map { id ->
         val req = Request("$id", nMsg, tStart)
         println("$id ${now() - org} ${req.url()}")

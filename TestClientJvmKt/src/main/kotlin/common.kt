@@ -36,7 +36,10 @@ val dbEmu = FirestoreOptions.getDefaultInstance().toBuilder()
 val httpClient = HttpClient(CIO) {
     install(JsonFeature) { serializer = KotlinxSerializer() }
     install(HttpTimeout) {
-        requestTimeoutMillis = 120 * 1000
-        connectTimeoutMillis = 120 * 1000
+        requestTimeoutMillis = 300 * 1000
+        connectTimeoutMillis = 300 * 1000
     }
 }
+
+val region = "asia-northeast2"
+val urlBase = "https://$region-stress1.cloudfunctions.net"
