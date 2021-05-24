@@ -8,12 +8,9 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 
-//val url = "http://localhost:5001/stress1/us-central1/startAt" // Local Emulator
-val url = "$urlBase/startAt" // Cloud★★★
-
 @Serializable
 data class Request(val id: String, val nMsg: Int, val timeToStart: Long) {
-    fun url() = "$url?id=$id&n=$nMsg&ts=$timeToStart"
+    fun url(rr: Int) = "$urlBase/startAt$rr?id=$id&n=$nMsg&ts=$timeToStart"
 }
 
 @Serializable
@@ -25,11 +22,12 @@ fun main(args: Array<String>): Unit = runBlocking {
 
 
     val org = now()
-    val tStart = org + 15 * 1000
+    val tStart = org + 0 * 1000
     val rs = (0 until nDev).map { id ->
+        delay(2)
         val req = Request("$id", nMsg, tStart)
-        println("$id ${now() - org} ${req.url()}")
-        async { httpClient.get<Result>(req.url()) }
+        println("$id ${now() - org} ${req.url(id % 4)}")
+        async { httpClient.get<Result>(req.url(id % 4)) }
     }.awaitAll().map { it.also { println(it) } }.sumOf { it.cs }
     println("total num of results: $rs")
 }
