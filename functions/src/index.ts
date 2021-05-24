@@ -91,7 +91,7 @@ export const startAtLauncher = functions
 
 // 指定時刻tまで待ち同時にn回Write
 // .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>
-export const startAt = functions
+export const startAtX = functions
   .runWith(runtimeOpts)
   .region(region)
   .https.onRequest(async (req, res) => {
@@ -122,6 +122,41 @@ export const startAt = functions
       res.json({ "ex": `${e}` })
     }
   })
+
+export const startAt = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt0 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt1 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt2 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt3 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+
+async function startAtFunc(req: functions.https.Request, res: functions.Response) {
+  try {
+    const timeCalled = Date.now()
+    const devId = req.query.id as string
+    const timeToStart = parseInt(req.query.ts as string)
+    const nMsg = parseInt(req.query.n as string)
+    async function addRecord(id: string) {
+      const log = {
+        "id": id,
+        "now": Date(),
+        "time": Date.now(),
+        "svrtime": firebase.firestore.FieldValue.serverTimestamp()
+      }
+      await firestore.collection('messages').add(log)
+      return `${id}, ${Date.now()}`
+    }
+    await sleep(timeToStart - Date.now())
+    var proms = Array<Promise<any>>()
+    for (var i = 0; i < nMsg; ++i) {
+      var r = addRecord(`${devId},${i}`)
+      proms.push(r)
+    }
+    var rs = (await Promise.all(proms))
+    res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
+  } catch (e) {
+    res.json({ "ex": `${e}` })
+  }
+}
 
 /*
 関数のデプロイ: https://firebase.google.com/docs/functions/manage-functions?hl=ja
