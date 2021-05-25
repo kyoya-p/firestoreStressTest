@@ -36,7 +36,6 @@ export const startAtLauncher1 = functions
       const timeToStart = parseInt(req.query.ts as string)
       var proms = Array<Promise<AxiosResponse>>()
       for (var i = 0; i < nr1; ++i) {
-        await sleep(1)
         const pr = axiosClient.get(`/startAtLauncher/?id=${launchId},${i}&nr=${nr}&nm=${nm}&ts=${timeToStart}`)
         proms.push(pr)
       }
@@ -55,6 +54,8 @@ export const startAtLauncher1 = functions
     }
   })
 
+const round = 20
+
 // startAtをnr回起動
 // .../startAtLauncher/?id=<launch_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
 export const startAtLauncher = functions
@@ -67,13 +68,13 @@ export const startAtLauncher = functions
       const nr = parseInt(req.query.nr as string)
       const nm = parseInt(req.query.nm as string)
       const timeToStart = parseInt(req.query.ts as string)
-      var proms = Array<Promise<AxiosResponse>>()
+      //var proms = Array<Promise<AxiosResponse>>()
       for (var i = 0; i < nr; ++i) {
-        await sleep(1)
-        const pr = axiosClient.get(`/startAt/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
-        proms.push(pr)
+        const r = Math.floor(Math.random() * round)
+        axiosClient.get(`/startAt${(i + r) % round}/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
+        //proms.push(pr)
       }
-      var rs = await Promise.all(proms)
+      /*var rs = await Promise.all(proms)
       var s = 0
       rs.forEach((e) => {
         if (e.data.ex != null) {
@@ -82,8 +83,9 @@ export const startAtLauncher = functions
           s = s + (e.data.cs as number)
         }
       })
-      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": s })
-      //res.json({ "res": `${rs}` })
+      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": res.length, "cs": s })
+*/
+      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": -1, "cs": -1 })
     } catch (ex) {
       res.json({ "ex": `${ex}` })
     }
@@ -107,27 +109,42 @@ export const startAtX = functions
           "time": Date.now(),
           "svrtime": firebase.firestore.FieldValue.serverTimestamp()
         }
-        await firestore.collection('messages').add(log)
-        return `${id}, ${Date.now()}`
+        firestore.collection('messages').add(log)
       }
       await sleep(timeToStart - Date.now())
-      var proms = Array<Promise<any>>()
+      //var proms = Array<Promise<any>>()
       for (var i = 0; i < nMsg; ++i) {
-        var r = addRecord(`${devId},${i}`)
-        proms.push(r)
+        addRecord(`${devId},${i}`)
+        //proms.push(r)
       }
-      var rs = (await Promise.all(proms))
-      res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
+      //var rs = (await Promise.all(proms))
+      //res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
+      res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": -1, "cs": nMsg })
     } catch (e) {
       res.json({ "ex": `${e}` })
     }
   })
 
-export const startAt = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 export const startAt0 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 export const startAt1 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 export const startAt2 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 export const startAt3 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt4 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt5 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt6 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt7 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt8 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt9 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt10 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt11 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt12 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt13 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt14 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt15 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt16 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt17 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt18 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const startAt19 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 
 async function startAtFunc(req: functions.https.Request, res: functions.Response) {
   try {
