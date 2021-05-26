@@ -17,15 +17,14 @@ data class Request(val id: String, val nMsg: Int, val timeToStart: Long) {
 data class Result(val id: String, val tc: Long, val ts: Long, val te: Long, val cr: Long, val cs: Long)
 
 
-val round = 10
-
+val round = 20
 
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
     val (nDev, nMsg) = args.map { it.toInt() }
 
     val org = now()
-    val tStart = org + 0 * 1000
+    val tStart = org + 5 * 1000
     val rs = (0 until nDev).map { id ->
         //delay(2)
         val req = Request("$id-${id % round}", nMsg, tStart)

@@ -54,7 +54,6 @@ export const startAtLauncher1 = functions
     }
   })
 
-const round = 20
 
 // startAtをnr回起動
 // .../startAtLauncher/?id=<launch_id_prefix>&nr=<num_of_req>&nm=<num_of_msg>&ts=<start_time>
@@ -68,11 +67,11 @@ export const startAtLauncher = functions
       const nr = parseInt(req.query.nr as string)
       const nm = parseInt(req.query.nm as string)
       const timeToStart = parseInt(req.query.ts as string)
-      //var proms = Array<Promise<AxiosResponse>>()
+      var proms = Array<Promise<AxiosResponse>>()
       for (var i = 0; i < nr; ++i) {
+        await sleep(1)
         const r = Math.floor(Math.random() * round)
-        axiosClient.get(`/startAt${(i + r) % round}/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
-        //proms.push(pr)
+        proms.push(axiosClient.get(`/startAt${(i + r) % round}/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`))
       }
       /*var rs = await Promise.all(proms)
       var s = 0
@@ -85,11 +84,16 @@ export const startAtLauncher = functions
       })
       res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": res.length, "cs": s })
 */
-      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": -1, "cs": -1 })
+      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": -1 })
     } catch (ex) {
       res.json({ "ex": `${ex}` })
+      console.error(`${ex}`)
     }
   })
+
+
+
+const round = 20
 
 // 指定時刻tまで待ち同時にn回Write
 // .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>
@@ -112,16 +116,17 @@ export const startAtX = functions
         firestore.collection('messages').add(log)
       }
       await sleep(timeToStart - Date.now())
-      //var proms = Array<Promise<any>>()
+      var proms = Array<Promise<any>>()
       for (var i = 0; i < nMsg; ++i) {
-        addRecord(`${devId},${i}`)
-        //proms.push(r)
+        await sleep(1)
+        proms.push(addRecord(`${devId},${i}`))
       }
       //var rs = (await Promise.all(proms))
       //res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
-      res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": -1, "cs": nMsg })
-    } catch (e) {
-      res.json({ "ex": `${e}` })
+      res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": nMsg })
+    } catch (ex) {
+      res.json({ "ex": `${ex}` })
+      console.error(`${ex}`)
     }
   })
 
