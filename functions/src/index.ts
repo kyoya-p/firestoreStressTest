@@ -6,7 +6,7 @@ import { RuntimeOptions } from "firebase-functions"
 
 const runtimeOpts = {
   timeoutSeconds: 60,
-  memory: '512MB'
+  memory: '128MB'
 } as RuntimeOptions
 const region = "asia-northeast2"
 
@@ -61,13 +61,13 @@ export const startAtLauncher = functions
   .runWith(runtimeOpts)
   .region(region)
   .https.onRequest(async (req, res) => {
+    var proms = Array<Promise<AxiosResponse>>()
     try {
       const timeCalled = Date.now()
       const launchId = req.query.id as string
       const nr = parseInt(req.query.nr as string)
       const nm = parseInt(req.query.nm as string)
       const timeToStart = parseInt(req.query.ts as string)
-      var proms = Array<Promise<AxiosResponse>>()
       for (var i = 0; i < nr; ++i) {
         await sleep(1)
         const r = Math.floor(Math.random() * round)
@@ -88,6 +88,7 @@ export const startAtLauncher = functions
     } catch (ex) {
       res.json({ "ex": `${ex}` })
       console.error(`${ex}`)
+      console.error(`Proms.length=${proms.length}`)
     }
   })
 
