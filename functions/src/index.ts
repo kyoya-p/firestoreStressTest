@@ -6,7 +6,7 @@ import { RuntimeOptions } from "firebase-functions"
 
 const runtimeOpts = {
   timeoutSeconds: 60,
-  memory: '128MB'
+  memory: '256MB'
 } as RuntimeOptions
 const region = "asia-northeast2"
 
@@ -165,17 +165,16 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
         "time": Date.now(),
         "svrtime": firebase.firestore.FieldValue.serverTimestamp()
       }
-      await firestore.collection('messages').add(log)
+      await firestore.collection('messages').add(log).catch((ex) => console.error(ex))
       return `${id}, ${Date.now()}`
     }
     await sleep(timeToStart - Date.now())
     var proms = Array<Promise<any>>()
     for (var i = 0; i < nMsg; ++i) {
-      var r = addRecord(`${devId},${i}`)
-      proms.push(r)
+      proms.push(addRecord(`${devId},${i}`))
     }
-    var rs = (await Promise.all(proms))
-    res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
+    //var rs = (await Promise.all(proms))
+    res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": nMsg })
   } catch (e) {
     res.json({ "ex": `${e}` })
   }
