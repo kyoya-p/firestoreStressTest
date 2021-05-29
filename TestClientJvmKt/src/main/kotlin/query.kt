@@ -11,7 +11,9 @@ fun Timestamp.toMillisec() = seconds * 1000 + nanos / 1000 / 1000
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
     val (nMsg) = args.map { it.toInt() }
-    val res = db.collection("messages").orderBy("svrtime", Query.Direction.DESCENDING).limit(nMsg)
+    val res = db.collection("messages")
+        //.orderBy("svrtime", Query.Direction.DESCENDING)
+        .limit(nMsg)
         .get().get().documents.mapNotNull { it.data }
     val t0 = (res[0]["svrtime"] as Timestamp).toMillisec()
     res.forEachIndexed { i, e ->
