@@ -69,12 +69,15 @@ export const startAtLauncher = functions
       const nm = parseInt(req.query.nm as string)
       const timeToStart = parseInt(req.query.ts as string)
       for (var i = 0; i < nr; ++i) {
-        await sleep(1)
+        //await sleep(1)
         const r = Math.floor(Math.random() * round)
-        proms.push(axiosClient.get(`/startAt${(i + r) % round}/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`))
+        const p = axiosClient.get(`/startAt${(i + r) % round}/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
+        p.then(() => { console.log({ "success": `` }) })
+          .catch((e) => { console.error({ "error": `${e}` }) })
+        proms.push(p)
       }
-      /*var rs = await Promise.all(proms)
-      var s = 0
+      const rs = await Promise.all(proms)
+      /*var s = 0
       rs.forEach((e) => {
         if (e.data.ex != null) {
           res.json({ "ex": `${e.data.ex}` })
@@ -84,7 +87,7 @@ export const startAtLauncher = functions
       })
       res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": res.length, "cs": s })
 */
-      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": -1 })
+      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": -1 })
     } catch (ex) {
       res.json({ "ex": `${ex}` })
       console.error(`${ex}`)
@@ -95,41 +98,6 @@ export const startAtLauncher = functions
 
 
 const round = 20
-
-// 指定時刻tまで待ち同時にn回Write
-// .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>
-export const startAtX = functions
-  .runWith(runtimeOpts)
-  .region(region)
-  .https.onRequest(async (req, res) => {
-    try {
-      const timeCalled = Date.now()
-      const devId = req.query.id as string
-      const timeToStart = parseInt(req.query.ts as string)
-      const nMsg = parseInt(req.query.n as string)
-      async function addRecord(id: string) {
-        const log = {
-          "id": id,
-          "now": Date(),
-          "time": Date.now(),
-          "svrtime": firebase.firestore.FieldValue.serverTimestamp()
-        }
-        firestore.collection('messages').add(log)
-      }
-      await sleep(timeToStart - Date.now())
-      var proms = Array<Promise<any>>()
-      for (var i = 0; i < nMsg; ++i) {
-        await sleep(1)
-        proms.push(addRecord(`${devId},${i}`))
-      }
-      //var rs = (await Promise.all(proms))
-      //res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
-      res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": nMsg })
-    } catch (ex) {
-      res.json({ "ex": `${ex}` })
-      console.error(`${ex}`)
-    }
-  })
 
 export const startAt0 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 export const startAt1 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
@@ -152,6 +120,8 @@ export const startAt17 = functions.runWith(runtimeOpts).region(region).https.onR
 export const startAt18 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 export const startAt19 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 
+// 指定時刻tまで待ち同時にn回Write
+// .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>
 async function startAtFunc(req: functions.https.Request, res: functions.Response) {
   try {
     const timeCalled = Date.now()
@@ -166,6 +136,9 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
         "svrtime": firebase.firestore.FieldValue.serverTimestamp()
       }
       await firestore.collection('messages').add(log).catch((ex) => console.error(ex))
+        .then(() => { console.log({ "success": Date.now() }) })
+        .catch((e) => { console.error({ "error": e }) })
+
       return `${id}, ${Date.now()}`
     }
     await sleep(timeToStart - Date.now())
@@ -173,7 +146,8 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
     for (var i = 0; i < nMsg; ++i) {
       proms.push(addRecord(`${devId},${i}`))
     }
-    //var rs = (await Promise.all(proms))
+    var rs = await Promise.all(proms)
+    console.log({ "pushed": `${Date.now()}`, "num": rs.length })
     res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": nMsg })
   } catch (e) {
     res.json({ "ex": `${e}` })

@@ -4,9 +4,18 @@ import com.google.cloud.Timestamp
 import com.google.cloud.firestore.Query
 import common.db
 import kotlinx.coroutines.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-fun Timestamp.toMillisec() = seconds * 1000 + nanos / 1000 / 1000
+@ExperimentalTime
+fun Timestamp.toDurationSinceOrigin() = Duration.seconds(seconds) + Duration.nanoseconds(nanos)
+
+@ExperimentalTime
+fun Timestamp.toInstant() = Instant.fromEpochMilliseconds(toDurationSinceOrigin().inWholeMilliseconds)
 
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
@@ -14,12 +23,16 @@ fun main(args: Array<String>): Unit = runBlocking {
     val res = db.collection("messages")
         //.orderBy("svrtime", Query.Direction.DESCENDING)
         .limit(nMsg)
-        .get().get().documents.mapNotNull { it.data }
-    val t0 = (res[0]["svrtime"] as Timestamp).toMillisec()
+        .get().get().documents.mapNotNull { it.data }.sortedBy { it["svrtime"] as Timestamp }
+    val t0 = (res.last()["svrtime"] as Timestamp).toDurationSinceOrigin()
     res.forEachIndexed { i, e ->
         val ts = e["svrtime"] as Timestamp
-        val t = ts.seconds * 1000 + ts.nanos / 1000 / 1000
-        println("$i, ${e["id"]}, ${e["time"]}, ${t0}, ${t0 - t} ")
+        val dt = t0 - ts.toDurationSinceOrigin()
+        println(
+            "${res.size - i - 1}, ${
+                ts.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
+            }, ${e["id"]}, ${e["time"]}, ${dt}${if (dt >= Duration.minutes(1)) "***" else ""} "
+        )
     }
 }
 
