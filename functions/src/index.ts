@@ -69,24 +69,12 @@ export const startAtLauncher = functions
       const nm = parseInt(req.query.nm as string)
       const timeToStart = parseInt(req.query.ts as string)
       for (var i = 0; i < nr; ++i) {
-        //await sleep(1)
         const r = Math.floor(Math.random() * round)
         const p = axiosClient.get(`/startAt${(i + r) % round}/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
-        p.then(() => { console.log({ "success": `` }) })
-          .catch((e) => { console.error({ "error": `${e}` }) })
+        //const p = axiosClient.get(`/startAt0/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
         proms.push(p)
       }
       const rs = await Promise.all(proms)
-      /*var s = 0
-      rs.forEach((e) => {
-        if (e.data.ex != null) {
-          res.json({ "ex": `${e.data.ex}` })
-        } else {
-          s = s + (e.data.cs as number)
-        }
-      })
-      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": res.length, "cs": s })
-*/
       res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": -1 })
     } catch (ex) {
       res.json({ "ex": `${ex}` })
@@ -96,6 +84,32 @@ export const startAtLauncher = functions
   })
 
 
+// 定常負荷
+// .../loadMaker/?id=<launch_id>&nr=<num_of_req>&ti=<interval_ms>
+export const loadMaker = functions
+  .runWith(runtimeOpts)
+  .region(region)
+  .https.onRequest(async (req, res) => {
+    var proms = Array<Promise<AxiosResponse>>()
+    try {
+      const timeCalled = Date.now()
+      const launchId = req.query.id as string
+      const nr = parseInt(req.query.nr as string)
+      const nm = parseInt(req.query.nm as string)
+      const roundId = parseInt(req.query.x as string) || 0
+      for (var i = 0; i < nr; ++i) {
+        const p = axiosClient.get(`/startAt${roundId}/?id=${launchId},${i}&n=${nm}&ts=0`)
+        //const p = axiosClient.get(`/startAt0/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
+        proms.push(p)
+      }
+      const rs = await Promise.all(proms)
+      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": -1 })
+    } catch (ex) {
+      res.json({ "ex": `${ex}` })
+      console.error(`${ex}`)
+      console.error(`Proms.length=${proms.length}`)
+    }
+  })
 
 const round = 20
 

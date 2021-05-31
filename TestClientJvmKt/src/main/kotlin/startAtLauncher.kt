@@ -4,6 +4,8 @@ import common.httpClient
 import common.urlBase
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
@@ -26,11 +28,16 @@ data class Result(val id: String, val tc: Long, val ts: Long, val te: Long, val 
 fun main(args: Array<String>): Unit = runBlocking {
     val (nLaunchReq, nLaunch, nMsg) = args.map { it.toInt() }
     val tOrg = now()
-    val tStart = tOrg + 10 * 1000
+    val tStart = tOrg + 0 * 1000
+    val sem = Semaphore(100)
     val rs = (0 until nLaunchReq).map { id ->
-        val req = Request("$id", nLaunch, nMsg, tStart)
-        println("$id ${now() - tOrg} ${req.url()}")
-        async { httpClient.get<Result>(req.url()) }
+        async {
+            sem.withPermit {
+                val req = Request("$id", nLaunch, nMsg, tStart)
+                println("$id ${now() - tOrg} ${req.url()}")
+                httpClient.get<Result>(req.url())
+            }
+        }
     }.awaitAll().map { it.also { println(it) } }.sumOf { it.cs }
     println("total num of results: $rs")
 }
