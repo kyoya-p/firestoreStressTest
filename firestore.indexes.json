@@ -15,9 +15,15 @@
       "collectionGroup": "messages",
       "fieldPath": "time",
       "indexes": []
-    },{
+    },
+    {
       "collectionGroup": "messages",
       "fieldPath": "svrtime",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "func",
       "indexes": []
     }
   ]

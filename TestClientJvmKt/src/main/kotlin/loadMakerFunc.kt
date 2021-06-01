@@ -1,45 +1,37 @@
-package startAt2
+package loadMakerFunc
 
 import common.httpClient
 import common.urlBase
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 
 @Serializable
-data class Request(val id: String, val nMsg: Int, val timeToStart: Long) {
-    fun url(rr: Int) = "$urlBase/startAt$rr?id=$id&n=$nMsg&ts=$timeToStart"
+data class Request(val id: String, val nReq: Int, val tCall: String) {
+    fun url(nRound: Int) = "$urlBase/loadMakerFuncs?id=$id&fn=$nRound&nr=$nReq&tc=$tCall"
 }
 
 @Serializable
-data class Result(val id: String, val tc: Long, val ts: Long, val te: Long, val cr: Long, val cs: Long)
-
-
-val round = 1
+data class Result(val id: String, val tc: Long, val te: Long, val cr: Long)
 
 @ExperimentalTime
 fun main(args: Array<String>): Unit = runBlocking {
-    val (nDev, nMsg) = args.map { it.toInt() }
+    val (nReq, nRound, nMsg) = args.map { it.toInt() }
     val org = now()
-    val tStart = org + 0 * 1000
 
-    val sem = Semaphore(50)
-    val rs = (0 until nDev).map { id ->
+    //val sem = Semaphore(50)
+    val rs = (0 until nReq).map { i ->
         async {
-            sem.withPermit {
-                val req = Request("${id}R${id % round}", nMsg, tStart)
-                println("$id ${now() - org}, ${sem.availablePermits}, ${req.url(id % round)}")
-                val url = req.url(id % round)
-                httpClient.get<Result>(url)
-            }
+            val req = Request("${i}R${i % nRound}", nMsg, "main,${now()}")
+            println("$i ${now() - org}, ${req.url(i % nRound)}")
+            val url = req.url(i % nRound)
+            httpClient.get<Result>(url)
         }
-    }.awaitAll().map { it.also { println(it) } }.sumOf { it.cs }
+    }.awaitAll().map { it.also { println(it) } }.sumOf { it.cr }
     println("total num of results: $rs")
-    println("total time required: ${now() - tStart}")
+    println("total time required: ${now() - org}")
 }
 
 fun now() = Clock.System.now().toEpochMilliseconds()

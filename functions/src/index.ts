@@ -5,8 +5,9 @@ import axios, { AxiosResponse } from 'axios'
 import { RuntimeOptions } from "firebase-functions"
 
 const runtimeOpts = {
-  timeoutSeconds: 60,
-  memory: '256MB'
+  timeoutSeconds: 540,
+  //memory: '512MB'
+  memory: '1GB'
 } as RuntimeOptions
 const region = "asia-northeast2"
 
@@ -84,26 +85,26 @@ export const startAtLauncher = functions
   })
 
 
-// 定常負荷
-// .../loadMaker/?id=<launch_id>&nr=<num_of_req>&ti=<interval_ms>
-export const loadMaker = functions
+// 最高負荷(同期write) Max 50sec
+// .../loadMaker/?id=<launch_id>&fn=<func_round_id>&nr=<num_of_req>&tc=<called_time>
+export const loadMakerFuncs = functions
   .runWith(runtimeOpts)
   .region(region)
   .https.onRequest(async (req, res) => {
     var proms = Array<Promise<AxiosResponse>>()
     try {
       const timeCalled = Date.now()
-      const launchId = req.query.id as string
+      const id = req.query.id as string
       const nr = parseInt(req.query.nr as string)
-      const nm = parseInt(req.query.nm as string)
-      const roundId = parseInt(req.query.x as string) || 0
+      const fn = req.query.fn as string || "0"
+      const tc = req.query.tc as string || "no"
       for (var i = 0; i < nr; ++i) {
-        const p = axiosClient.get(`/startAt${roundId}/?id=${launchId},${i}&n=${nm}&ts=0`)
-        //const p = axiosClient.get(`/startAt0/?id=${launchId},${i}&n=${nm}&ts=${timeToStart}`)
+        await sleep(0)
+        const p = axiosClient.get(`/startAt${fn}/?id=${id},${i}&n=1&ts=0&tc=loadMakerFunc,${Date.now()},${tc}`)
         proms.push(p)
       }
       const rs = await Promise.all(proms)
-      res.json({ "id": launchId, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": -1 })
+      res.json({ "id": id, "tc": timeCalled, "te": Date.now(), "cr": rs.length })
     } catch (ex) {
       res.json({ "ex": `${ex}` })
       console.error(`${ex}`)
@@ -135,19 +136,21 @@ export const startAt18 = functions.runWith(runtimeOpts).region(region).https.onR
 export const startAt19 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
 
 // 指定時刻tまで待ち同時にn回Write
-// .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>
+// .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>&tc=<called_time>
 async function startAtFunc(req: functions.https.Request, res: functions.Response) {
   try {
     const timeCalled = Date.now()
-    const devId = req.query.id as string
-    const timeToStart = parseInt(req.query.ts as string)
-    const nMsg = parseInt(req.query.n as string)
+    const id = req.query.id as string
+    const timeToStart = parseInt(req.query.ts as string || "0")
+    const nMsg = parseInt(req.query.n as string || "1")
+    const tCall = req.query.tc || "no"
     async function addRecord(id: string) {
       const log = {
         "id": id,
         "now": Date(),
         "time": Date.now(),
-        "svrtime": firebase.firestore.FieldValue.serverTimestamp()
+        "svrtime": firebase.firestore.FieldValue.serverTimestamp(),
+        "func": tCall,
       }
       await firestore.collection('messages').add(log).catch((ex) => console.error(ex))
         .then(() => { console.log({ "success": Date.now() }) })
@@ -158,11 +161,10 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
     await sleep(timeToStart - Date.now())
     var proms = Array<Promise<any>>()
     for (var i = 0; i < nMsg; ++i) {
-      proms.push(addRecord(`${devId},${i}`))
+      proms.push(addRecord(`${id},${i}`))
     }
     var rs = await Promise.all(proms)
-    console.log({ "pushed": `${Date.now()}`, "num": rs.length })
-    res.json({ "id": `${devId}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": proms.length, "cs": nMsg })
+    res.json({ "id": `${id}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
   } catch (e) {
     res.json({ "ex": `${e}` })
   }
