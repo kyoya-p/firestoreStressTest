@@ -31,7 +31,7 @@ fun main(args: Array<String>): Unit = runBlocking {
         println(
             "${res.size - i - 1}, ${
                 ts.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
-            }, ${e["id"]}, ${e["func"]}, ${e["time"]}, ${dt}${if (dt >= Duration.minutes(1)) "***" else ""} "
+            }, ${e["id"]}, ${e["func"]}, ${e["time"]}, ${dt}${if (dt >= Duration.minutes(2)) "***" else ""} "
         )
     }
 }

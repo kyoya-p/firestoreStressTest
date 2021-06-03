@@ -166,8 +166,9 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
     }
     var rs = await Promise.all(proms)
     res.json({ "id": `${id}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
-  } catch (e) {
-    res.json({ "ex": `${e}` })
+  } catch (ex) {
+    res.json({ "ex": `${ex}` })
+    console.error(`${ex}`)
   }
 }
 

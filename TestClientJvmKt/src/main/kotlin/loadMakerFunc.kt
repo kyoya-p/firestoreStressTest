@@ -23,9 +23,8 @@ val org = now()
 suspend fun load(nMulti: Int, nMsg: Int) = coroutineScope {
     (0 until nMulti).map { i ->
         async {
-            val req = Request("999", nMsg, "main,${now()}")
-            println("warmup, ${now() - org}, nMulti, ${req.url(i % 20)}")
-            val url = req.url(i % 20)
+            val url = Request("999", nMsg, "main,${now()}").url(i % 20)
+            println("warmup, ${now() - org}, nMulti, $url")
             httpClient.get<Result>(url)
         }
     }.awaitAll().map { it.also { println(it) } }.sumOf { it.cr }
@@ -37,10 +36,10 @@ fun main(args: Array<String>): Unit = runBlocking {
 //val (nReq, nRound, nMsg) = args.map { it.toInt() }
 
     // warmup
-    listOf(1, 2, 4, 8, 16).forEach { nMulti ->
-        load(nMulti, 200)
-        println("delay, ${now() - org}")
-        delay(5 * 1000)
+    listOf(1, 2, 4, 6, 8, 12, 16).forEach { nMulti ->
+        load(nMulti, 400)
+        //println("delay, ${now() - org}")
+        //delay(10 * 1000) //最初の30秒は無条件でリクエストを要求
     }
     println("total time required: ${now() - org}")
 }
