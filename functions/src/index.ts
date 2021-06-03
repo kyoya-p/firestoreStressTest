@@ -8,6 +8,7 @@ const runtimeOpts = {
   timeoutSeconds: 540,
   //memory: '512MB'
   memory: '1GB'
+  //memory: '2GB'
 } as RuntimeOptions
 const region = "asia-northeast2"
 
