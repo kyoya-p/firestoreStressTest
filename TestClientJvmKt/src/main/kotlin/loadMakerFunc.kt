@@ -36,10 +36,8 @@ fun main(args: Array<String>): Unit = runBlocking {
 //val (nReq, nRound, nMsg) = args.map { it.toInt() }
 
     // warmup
-    listOf(1, 2, 4, 6, 8, 12, 16).forEach { nMulti ->
+    listOf(1, 1, 1, 1, 3, 3, 3, 6, 6, 9, 12, 15).forEach { nMulti ->
         load(nMulti, 400)
-        //println("delay, ${now() - org}")
-        //delay(10 * 1000) //最初の30秒は無条件でリクエストを要求
     }
     println("total time required: ${now() - org}")
 }
