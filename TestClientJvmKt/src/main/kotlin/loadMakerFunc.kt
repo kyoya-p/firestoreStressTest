@@ -20,10 +20,10 @@ data class Result(val id: String, val tc: Long, val te: Long, val cr: Long)
 fun now() = Clock.System.now().toEpochMilliseconds()
 val org = now()
 
-suspend fun load(nMulti: Int, nMsg: Int) = coroutineScope {
+suspend fun load(id: String, nMulti: Int, nFuncGen: Int) = coroutineScope {
     (0 until nMulti).map { i ->
         async {
-            val url = Request("999", nMsg, "main,${now()}").url(i % 20)
+            val url = Request(id, nFuncGen, "main,${now()}").url(i % 20)
             println("warmup, ${now() - org}, nMulti, $url")
             httpClient.get<Result>(url)
         }
@@ -31,13 +31,12 @@ suspend fun load(nMulti: Int, nMsg: Int) = coroutineScope {
 }
 
 @ExperimentalTime
-fun main(args: Array<String>): Unit = runBlocking {
+fun main(): Unit = runBlocking {
     println("org: $org")
-//val (nReq, nRound, nMsg) = args.map { it.toInt() }
 
     // warmup
-    listOf(1, 1, 1, 1, 3, 3, 3, 6, 6, 9, 12, 15).forEach { nMulti ->
-        load(nMulti, 400)
+    listOf(1).forEach { nMulti ->
+        load(id = "$org", nMulti = nMulti, nFuncGen = 100)
     }
     println("total time required: ${now() - org}")
 }

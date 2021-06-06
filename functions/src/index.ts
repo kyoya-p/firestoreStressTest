@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as firebase from "firebase-admin"
+//import * as firebase from "firebase-admin"
 import * as functions from "firebase-functions"
 import axios, { AxiosResponse } from 'axios'
 import { RuntimeOptions } from "firebase-functions"
@@ -18,8 +18,8 @@ const axiosClient = axios.create({
   timeout: 300 * 1000, // milliseconds
 })
 
-firebase.initializeApp();
-const firestore = firebase.firestore();
+//firebase.initializeApp();
+//const firestore = firebase.firestore();
 
 const sleep = (msec: number) => new Promise(resolve => setTimeout(resolve, msec))
 
@@ -144,7 +144,7 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
     const id = req.query.id as string
     const timeToStart = parseInt(req.query.ts as string || "0")
     const nMsg = parseInt(req.query.n as string || "1")
-    const tCall = req.query.tc || "no"
+    /*const tCall = req.query.tc || "no"
     async function addRecord(id: string) {
       const log = {
         "id": id,
@@ -165,7 +165,9 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
       proms.push(addRecord(`${id},${i}`))
     }
     var rs = await Promise.all(proms)
-    res.json({ "id": `${id}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": rs.length, "cs": nMsg })
+    */
+    res.json({ "id": `${id}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": 1, "cs": nMsg })
+    console.info(`id: ${id}`)
   } catch (ex) {
     res.json({ "ex": `${ex}` })
     console.error(`${ex}`)
