@@ -1,7 +1,5 @@
-org: 1623020642265
+org: 1623153151891
+total time required: 63
 SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
-warmup, 1374, nMulti, https://asia-northeast2-stress1.cloudfunctions.net/loadMakerFuncs?id=1623020642265&fn=0&nr=100&tc=main,1623020642341
-Result(id=1623020642265, tc=1623020644650, te=1623020647201, cr=100)
-total time required: 5024

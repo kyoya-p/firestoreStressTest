@@ -87,7 +87,7 @@ export const startAtLauncher = functions
 
 
 // 最高負荷(同期write) Max 50sec
-// .../loadMaker/?id=<launch_id>&fn=<func_round_id>&nr=<num_of_req>&tc=<called_time>
+// .../loadMaker/?id=<launch_id>&fn=<func_round>&nr=<num_of_req>&tc=<called_time>
 export const loadMakerFuncs = functions
   .runWith(runtimeOpts)
   .region(region)
@@ -97,11 +97,11 @@ export const loadMakerFuncs = functions
       const timeCalled = Date.now()
       const id = req.query.id as string
       const nr = parseInt(req.query.nr as string)
-      const fn = req.query.fn as string || "0"
+      const fn = parseInt(req.query.fn as string || "1")
       const tc = req.query.tc as string || "no"
       for (var i = 0; i < nr; ++i) {
         await sleep(0)
-        const p = axiosClient.get(`/startAt${fn}/?id=${id},${i}&n=1&ts=0&tc=loadMakerFunc,${Date.now()},${tc}`)
+        const p = axiosClient.get(`/startAt${i%fn}/?id=${id},${i}&n=1&ts=0&tc=loadMakerFunc,${Date.now()},${tc}`)
         proms.push(p)
       }
       const rs = await Promise.all(proms)
