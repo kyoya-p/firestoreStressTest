@@ -1,8 +1,17 @@
 /* eslint-disable */
-//import * as firebase from "firebase-admin"
+
+import * as firebase from "firebase"
 import * as functions from "firebase-functions"
 import axios, { AxiosResponse } from 'axios'
 import { RuntimeOptions } from "firebase-functions"
+
+const firebaseConfig = {
+  
+};
+
+// Initialize Firebase
+firebase.default.initializeApp(firebaseConfig);
+
 
 const runtimeOpts = {
   timeoutSeconds: 540,
@@ -115,35 +124,33 @@ export const loadMakerFuncs = functions
 
 const round = 20
 
-export const startAt0 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt1 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt2 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt3 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt4 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt5 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt6 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt7 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt8 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt9 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt10 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt11 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt12 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt13 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt14 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt15 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt16 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt17 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt18 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
-export const startAt19 = functions.runWith(runtimeOpts).region(region).https.onRequest(startAtFunc)
+export const target0 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target1 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target2 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target3 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target4 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target5 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target6 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target7 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target8 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target9 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target10 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target11 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target12 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target13 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target14 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target15 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target16 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target17 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target18 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
+export const target19 = functions.runWith(runtimeOpts).region(region).https.onRequest(target)
 
-// 指定時刻tまで待ち同時にn回Write
-// .../startAt/?id=<dev_id>&n=<writes>&ts=<start_time>&tc=<called_time>
-async function startAtFunc(req: functions.https.Request, res: functions.Response) {
+// .../targrt/?id=<dev_id>&tc=<called_time>
+async function target(req: functions.https.Request, res: functions.Response) {
   try {
     const timeCalled = Date.now()
     const id = req.query.id as string
-    const timeToStart = parseInt(req.query.ts as string || "0")
-    const nMsg = parseInt(req.query.n as string || "1")
+    const tCall = parseInt(req.query.tc as string)
     /*const tCall = req.query.tc || "no"
     async function addRecord(id: string) {
       const log = {
@@ -166,7 +173,9 @@ async function startAtFunc(req: functions.https.Request, res: functions.Response
     }
     var rs = await Promise.all(proms)
     */
-    res.json({ "id": `${id}`, "tc": timeCalled, "ts": timeToStart, "te": Date.now(), "cr": 1, "cs": nMsg })
+
+    firebase.default.analytics().logEvent('notification_received');
+    res.json({ "id": `${id}`, "tc": timeCalled, "req":{"tc":tCall}})
     console.info(`id: ${id}`)
   } catch (ex) {
     res.json({ "ex": `${ex}` })
