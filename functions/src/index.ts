@@ -1,9 +1,15 @@
 /* eslint-disable */
 
-import * as firebase from "firebase"
 import * as functions from "firebase-functions"
 import axios, { AxiosResponse } from 'axios'
 import { RuntimeOptions } from "firebase-functions"
+
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+const auth = getAuth(firebaseApp);
+onAuthStateChanged(auth, user => {
+  // Check for user status
+});
 
 const firebaseConfig = {
   
