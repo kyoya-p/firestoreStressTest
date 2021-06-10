@@ -3,6 +3,11 @@
   "fieldOverrides": [
     {
       "collectionGroup": "messages",
+      "fieldPath": "func",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
       "fieldPath": "id",
       "indexes": []
     },
@@ -13,17 +18,12 @@
     },
     {
       "collectionGroup": "messages",
-      "fieldPath": "time",
-      "indexes": []
-    },
-    {
-      "collectionGroup": "messages",
       "fieldPath": "svrtime",
       "indexes": []
     },
     {
       "collectionGroup": "messages",
-      "fieldPath": "func",
+      "fieldPath": "time",
       "indexes": []
     }
   ]
