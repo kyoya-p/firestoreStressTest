@@ -4,18 +4,6 @@ import { getFirestore, collection, addDoc } from "firebase/firestore"
 
 import axios, { AxiosResponse } from 'axios'
 
-const firebaseConfig = {
-    apiKey: "AIzaSyA5-SBdtMZ9dTUVkrth1Ss2p1JbH8zjVMs",
-    authDomain: "stress1.firebaseapp.com",
-    projectId: "stress1",
-    storageBucket: "stress1.appspot.com",
-    messagingSenderId: "697538713156",
-    appId: "1:697538713156:web:1aa57040441fa8a9e00e11",
-    measurementId: "G-F1071BTZMH"
-};
-
-initializeApp(firebaseConfig)
-
 const runtimeOpts = {
     timeoutSeconds: 540,
     //memory: '512MB'
@@ -53,9 +41,7 @@ export const target = functions.runWith(runtimeOpts).region(region).https.onRequ
     try {
         const db = getFirestore()
         const docRef = await addDoc(collection(db, "messages"), {
-            first: "Ada",
-            last: "Lovelace",
-            born: 1815
+            time: Date.now()
         });
         //        console.log("Document written with ID: ", docRef.id)
         const res = { "res": { "id": docRef.id, "time": Date.now() } }
